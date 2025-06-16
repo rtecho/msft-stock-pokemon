@@ -10,9 +10,8 @@
     },
     "resourceGroupName": {
       "value": "rg-${AZURE_ENV_NAME}"
-    },
-    "ALPHA_VANTAGE_API_KEY": {
-      "value": "<your-alpha-vantage-api-key>"
+    },    "ALPHA_VANTAGE_API_KEY": {
+      "value": "demo"
     }
   }
 }

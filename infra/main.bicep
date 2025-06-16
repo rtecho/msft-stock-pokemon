@@ -1,17 +1,14 @@
 // main.bicep
-// Deploys: Container App, Log Analytics, App Insights, Key Vault, Container Registry
+// Deploys: Log Analytics, App Insights, Key Vault, App Service (with Docker), Application Settings
 // Uses managed identity, secure settings, and connects all monitoring/logging
 
 param environmentName string
 param location string
-param resourceGroupName string
 param ALPHA_VANTAGE_API_KEY string
 
-var containerAppName = 'msftstockpokemon-${environmentName}'
 var logAnalyticsName = 'log-${environmentName}'
 var appInsightsName = 'appi-${environmentName}'
 var keyVaultName = 'kv${environmentName}'
-var registryName = 'cr${environmentName}'
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: logAnalyticsName
@@ -52,65 +49,63 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   }
 }
 
-resource registry 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
-  name: registryName
+resource appServicePlan 'Microsoft.Web/serverfarms@2024-04-01' = {
+  name: 'msftstockpokemon-${uniqueString(subscription().id, resourceGroup().id, environmentName)}-plan'
   location: location
   sku: {
-    name: 'Standard'
-  }
-  properties: {
-    adminUserEnabled: false
-    publicNetworkAccess: 'Enabled'
+    name: 'P1V2'
+    tier: 'PremiumV2'
+    capacity: 1
   }
 }
 
-resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
-  name: containerAppName
+resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-PREVIEW' = {
+  name: 'msftstockpokemon-identity'
   location: location
+}
+
+resource appService 'Microsoft.Web/sites@2024-04-01' = {
+  name: 'msftstockpokemon-${uniqueString(subscription().id, resourceGroup().id, environmentName)}'
+  location: location
+  kind: 'app'
   identity: {
-    type: 'SystemAssigned'
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentity.id}': {}
+    }
+  }
+  tags: {
+    'azd-service-name': 'msft-stock-pokemon'
   }
   properties: {
-    environmentId: '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.App/managedEnvironments/${environmentName}-env'
-    configuration: {
-      secrets: [
+    siteConfig: {      appSettings: [
         {
           name: 'ALPHA_VANTAGE_API_KEY'
           value: ALPHA_VANTAGE_API_KEY
         }
-      ]
-      registries: [
         {
-          server: '${registryName}.azurecr.io'
+          name: 'WEBSITE_NODE_DEFAULT_VERSION'
+          value: '~18'
+        }
+        {
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '1'
+        }
+        {
+          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
+          value: 'true'
         }
       ]
-    }
-    template: {
-      containers: [
-        {
-          name: 'msft-stock-pokemon'
-          image: '${registryName}.azurecr.io/msft-stock-pokemon:latest'
-          env: [
-            {
-              name: 'ALPHA_VANTAGE_API_KEY'
-              secretRef: 'ALPHA_VANTAGE_API_KEY'
-            }
-          ]
-          resources: {
-            cpu: 0.5
-            memory: '1.0Gi'
-          }
-        }
-      ]
-      scale: {
-        minReplicas: 1
-        maxReplicas: 3
+      linuxFxVersion: ''
+      nodeVersion: '~18'
+      scmType: 'LocalGit'
+      cors: {
+        allowedOrigins: ['*']
+        supportCredentials: false
       }
     }
-    ingress: {
-      external: true
-      targetPort: 3000
-      transport: 'auto'
-    }
+    httpsOnly: true
   }
 }
+
+output RESOURCE_GROUP_ID string = resourceGroup().id

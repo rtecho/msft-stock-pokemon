@@ -1,10 +1,10 @@
 {
   "name": "msft-stock-pokemon",
   "version": "1.0.0",
-  "description": "Node.js web app to display latest MSFT stock prices with a Pokémon-themed background.",
-  "main": "src/server.js",
+  "description": "Node.js web app to display latest MSFT stock prices with a Pokémon-themed background.",  "main": "server.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "node server.js",
+    "postinstall": "npm install"
   },
   "dependencies": {
     "axios": "^1.6.0",
