@@ -1,0 +1,14 @@
+name: msft-stock-pokemon
+metadata:
+  template: azd-init@1.6.0
+services:
+  msft-stock-pokemon:
+    project: .
+    language: js
+    host: containerapp
+    docker:
+      path: .
+      context: .
+      dockerfile: Dockerfile
+    env:
+      - ALPHA_VANTAGE_API_KEY

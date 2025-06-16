@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MSFT Stock - Pokémon Theme</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="background">
+    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" class="pokemon pikachu" alt="Pikachu">
+    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png" class="pokemon bulbasaur" alt="Bulbasaur">
+    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" class="pokemon charmander" alt="Charmander">
+    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png" class="pokemon squirtle" alt="Squirtle">
+  </div>
+  <div class="container">
+    <h1>MSFT Stock Price (Last 6 Months)</h1>
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="error"><%= error %></div>
+    <% } %>
+    <canvas id="stockChart" width="800" height="400"></canvas>
+  </div>
+  <script>
+    // Properly embed chartData as a JS variable
+    var chartData = JSON.parse('<%- JSON.stringify(chartData || []) %>');
+    if (chartData.length > 0) {
+      const ctx = document.getElementById('stockChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: chartData.map(d => d.date),
+          datasets: [{
+            label: 'MSFT Close Price',
+            data: chartData.map(d => d.close),
+            borderColor: '#3b4cca',
+            backgroundColor: 'rgba(59, 76, 202, 0.1)',
+            pointBackgroundColor: '#ffcb05',
+            tension: 0.2
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { labels: { color: '#222' } }
+          },
+          scales: {
+            x: { ticks: { color: '#222' } },
+            y: { ticks: { color: '#222' } }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
