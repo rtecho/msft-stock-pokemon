@@ -7,7 +7,21 @@
 # 1. Install npm packages
 if [ -e "./package.json" ]; then
   echo "Installing npm packages"
-  npm install
+  npm install --production
+  # Check if installation was successful
+  if [ $? -ne 0 ]; then
+    echo "npm install failed, retrying with more debug info"
+    npm install --production --verbose
+    # If it still fails, exit with error
+    if [ $? -ne 0 ]; then
+      echo "npm install failed after retry"
+      exit 1
+    fi
+  fi
+  echo "npm packages installed successfully"
+  # List installed packages for verification
+  echo "Installed packages:"
+  npm list --depth=0
 fi
 
 # 2. Create the web.config file if not exists

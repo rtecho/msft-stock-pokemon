@@ -1,7 +1,25 @@
 // Simple Express server for MSFT-Stock-Pokemon app
-const express = require('express');
-const path = require('path');
-const fs = require('fs');
+console.log('Starting server initialization...');
+console.log('Current directory:', __dirname);
+console.log('Files in directory:', require('fs').readdirSync(__dirname).join(', '));
+console.log('Node version:', process.version);
+console.log('NPM version:', require('child_process').execSync('npm -v').toString().trim());
+
+try {
+  console.log('Loading modules...');
+  
+  const express = require('express');
+  console.log('Express loaded successfully');
+  
+  const path = require('path');
+  console.log('Path loaded successfully');
+  
+  const fs = require('fs');
+  console.log('FS loaded successfully');
+} catch (err) {
+  console.error('Error loading modules:', err);
+  process.exit(1);
+}
 
 // Create Express app
 const app = express();
